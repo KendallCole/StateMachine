@@ -30,12 +30,13 @@ export type StateMachine = {
     --Methods    
     AddState: (StateMachine, StateName, number?, boolean?) -> (),
     RemoveState: (StateMachine, StateName) -> (),
-
+    
     HasState: (StateMachine, StateName) -> boolean,
     Reset: (StateMachine) -> (),
     GetStates: (StateMachine) -> {[StateName]: ActiveState},
     GetHeap: (StateMachine) -> {any},
-    GetBannedStates:  (StateMachine) -> {[StateName]: number}
+    GetBannedStates:  (StateMachine) -> {[StateName]: number},
+    GetTimeUntilExpiration: (StateMachine, StateName) -> number?
 }
 
 return nil

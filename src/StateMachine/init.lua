@@ -1,6 +1,5 @@
 --!strict
 
-
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local RunService = game:GetService("RunService")
 local Heap = require(ReplicatedStorage:WaitForChild("DataStructures"):WaitForChild("Heap"))
@@ -15,14 +14,13 @@ local function Init()
     StateMachine._BannedStates = {}
     StateMachine._ActiveStates = {} 
     StateMachine.States = require(script.States) :: any
-    local function unpackDict(Dict: {any: any}): (any, any)
+    local function unpackDict(Dict: {any: any}): (any, any) -- Is there a more elegant to get a dict's keys in lua?
         for k, v in pairs(Dict) do
             return k, v
         end
         return 
     end
-    local function CompareExperationTime(a: any, b: any)
-        --print("COMPAIRING: ",a, b)
+    local function CompareExperationTime(a: any, b: any) -- Comparitor func used for the heap
         local aName, aTimestamp = unpackDict(a)
         local bName, bTimestamp = unpackDict(b)
         assert(type(aTimestamp)=='number', ("Issue with extracting timestamp from state "..aName))
@@ -55,10 +53,8 @@ local function Init()
     StateMachine._StateRemoved = StateRemoved
     StateMachine.OnStateRemoving = StateRemoved.Event 
     --STRATEGY:
-    -- 1) Use min heap (for positive numbers only) to see if the current task has expired
-    -- 2) If the task has expired, check the updated time map to see if we need to extend the time
-    --      a. IF there is an update in the map, pop the task, and then re-add it with the updated time
-    --      b. IF there is no update, pop the task, and then end its activity thread from _ActiveStates
+    -- 1) Using a min heap (for positive numbers only, ignores -1 for infinity) to see if the current task has expired
+    -- 2) If the task has expired, ensure that it is Removed
     task.spawn(function()
         while true do
 
@@ -82,17 +78,11 @@ local function Init()
                 
                 --print(StateName,"expires in", ExperationTimestamp - tick())
                 if TimeTillExpired <= 0 then
-                    local PopState = StateMachine._ActiveStatesHeap:Pop()
+                    StateMachine._ActiveStatesHeap:Pop()
                     StateMachine:RemoveState(StateName)
-                    print("popped", PopState)
-                    
-                    
                 end
             end
-            -- if size > 0 then
-            --     print(StateMachine._ActiveStatesHeap:GetAsTable())
-            --     print(StateMachine:GetStates())
-            -- end
+
             RunService.RenderStepped:Wait()
         end
     end)
@@ -236,6 +226,21 @@ end
 
 function StateMachine:HasState(StateName: string): boolean
     return not (self._ActiveStates[StateName] == nil)
+end
+
+function StateMachine:GetTimeUntilExpiration(StateName): number?
+    if self:HasState(StateName) then
+        print(StateMachine._ActiveStatesHeap)
+        for i, heapEntry in StateMachine._ActiveStatesHeap do
+            if type(heapEntry) == 'table' and heapEntry[StateName] ~= nil then
+                return heapEntry[StateName] - tick()
+            end
+        end
+    else
+        warn(("State "..StateName.." Not found, returning nil"))
+    end
+    
+    return nil
 end
 
 function StateMachine:GetStates()

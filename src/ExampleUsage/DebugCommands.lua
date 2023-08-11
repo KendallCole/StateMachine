@@ -28,6 +28,10 @@ commands = {
     end,
     ["/addstate"] = function(_, StateName, Duration, Override)
         StateMachine:AddState(StateName, tonumber(Duration), Override)
+    end,
+    ["/gettime"] = function(_, StateName)
+		local res = StateMachine:GetTimeUntilExpiration(StateName) or "[UNKNOWN STATE ERR]"
+        print(StateName, "exipires in "..res)
     end
 	
 }
