@@ -1,0 +1,21 @@
+{
+  "name": "StateMachine",
+  "tree": {
+    "$className": "DataModel",
+    "ReplicatedStorage": {
+      "DataStructures": {
+        "$path": "src/DataStructures"
+      }
+    },
+    "StarterPlayer": {
+      "StarterPlayerScripts": {
+        "StateMachine": {
+          "$path": "src/StateMachine"
+        },
+        "ExampleUsage": {
+          "$path": "src/ExampleUsage"
+        }
+      }
+    }    
+  }
+}
