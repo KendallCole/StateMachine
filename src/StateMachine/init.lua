@@ -208,7 +208,7 @@ function StateMachine:RemoveState(StateName: string)
             self.States[StateName].OnExit()
             self._StateRemoved:Fire(StateName)
 
-            --Search heap and float entry to the top to avoid a stale heap removal
+            --Search heap and float entry to the top to avoid any stale nodes
             for i, heapEntry in StateMachine._ActiveStatesHeap do
                 if type(heapEntry) == 'table' and heapEntry[StateName] ~= nil then
                     print("Force floating to top")
@@ -231,7 +231,7 @@ end
 function StateMachine:GetTimeUntilExpiration(StateName): number?
     if self:HasState(StateName) then
         print(StateMachine._ActiveStatesHeap)
-        for i, heapEntry in StateMachine._ActiveStatesHeap do
+        for _, heapEntry in StateMachine._ActiveStatesHeap do
             if type(heapEntry) == 'table' and heapEntry[StateName] ~= nil then
                 return heapEntry[StateName] - tick()
             end

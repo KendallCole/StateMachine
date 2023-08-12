@@ -1,5 +1,5 @@
 local Types = require(script.Parent:WaitForChild("StateMachine").Types) 
-local DebugCommands = require(script.DebugCommands)
+local _DebugCommands = require(script.DebugCommands)
 
 type StateMachine = Types.StateMachine
 
