@@ -74,15 +74,26 @@ local function Init()
                     continue 
                 end
                 
+
+                
                 local TimeTillExpired = ExperationTimestamp - tick()
                 
                 --print(StateName,"expires in", ExperationTimestamp - tick())
                 if TimeTillExpired <= 0 then
                     StateMachine._ActiveStatesHeap:Pop()
                     StateMachine:RemoveState(StateName)
+                    --We can go ahead and check if any mroe states expire this frame
+                    while StateMachine._ActiveStatesHeap:Peek() ~= nil do
+                        local NextNextExpiredState = StateMachine._ActiveStatesHeap:Peek()
+                        local NextStateName, NextExperationTimestamp = unpackDict(NextNextExpiredState)
+                        local NextTimeTillExpired = NextExperationTimestamp - tick()
+                        if NextTimeTillExpired <= 0 then   
+                            StateMachine._ActiveStatesHeap:Pop()
+                            StateMachine:RemoveState(NextStateName)
+                        end
+                    end
                 end
             end
-
             RunService.RenderStepped:Wait()
         end
     end)
@@ -141,7 +152,6 @@ function StateMachine:AddState(StateName: string, duration: number?, overrideQue
                                 self._ActiveStatesHeap:UpdateIndex(i, {[StateName] = curDuration+ duration})
                             end
                         end
-                        print("Add to current duration")
                     end                
                     break --Only do once, exit loop! 
                 end
@@ -176,7 +186,6 @@ function StateMachine:AddState(StateName: string, duration: number?, overrideQue
         for _, RemoveName in ipairs(self.States[StateName].Removes) do
             if self._ActiveStates[RemoveName] then
                 self:RemoveState(RemoveName)
-                print("Auto removed state", RemoveName)
             end
         end
         
