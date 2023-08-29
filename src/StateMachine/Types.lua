@@ -22,11 +22,13 @@ export type StateMachine = {
     _ActiveStatesUpdates: any, -- {[StateName]: number} Linter not liking this, giving up for now
     _StateAdded: any, --BindableEvent 
     _StateRemoved: any, --BindableEvent 
+    _StateReinvolked: any, --BindableEvent 
     _BannedStates: {[StateName]: number},
     _ActiveStates: {[StateName]: ActiveState},
     --Signals
     OnStateRemoving: RBXScriptSignal | any,
     OnStateAdded: RBXScriptSignal | any, 
+    OnStateReinvolked: RBXScriptSignal | any, 
     --Methods    
     AddState: (StateMachine, StateName, number?, boolean?) -> (),
     RemoveState: (StateMachine, StateName) -> (),

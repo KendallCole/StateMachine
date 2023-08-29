@@ -44,11 +44,15 @@ local function Init()
 
     local StateAdded: BindableEvent = Instance.new("BindableEvent")
     local StateRemoved: BindableEvent = Instance.new("BindableEvent")
+    local StateReinvolked: BindableEvent = Instance.new("BindableEvent")
 
     StateMachine._ActiveStatesHeap = ActiveStatesHeap :: any --@TODO type heap
 
     StateMachine._StateAdded = StateAdded :: BindableEvent
     StateMachine.OnStateAdded = StateAdded.Event
+
+    StateMachine._StateReinvolked = StateReinvolked :: BindableEvent
+    StateMachine.OnStateReinvolked = StateReinvolked.Event
 
     StateMachine._StateRemoved = StateRemoved
     StateMachine.OnStateRemoving = StateRemoved.Event 
@@ -110,7 +114,6 @@ function StateMachine:AddState(StateName: string, duration: number?, overrideQue
     
     if self.States[StateName] then
         --Ensure the state isn't blocked
-        print(self._BannedStates)
         if self._BannedStates[StateName] and self._BannedStates[StateName] > 0 then
             warn(("Can't enter "..StateName.. " [state is currently banned]"))
             return false
@@ -157,7 +160,7 @@ function StateMachine:AddState(StateName: string, duration: number?, overrideQue
                 end
 
             end
-           
+            self._StateReinvolked:Fire(StateName)
         else
             self.States[StateName].OnEnter()
             local ExperationTimestamp = if duration >= 0 then tick() + duration else DEFAULT_DURATION
