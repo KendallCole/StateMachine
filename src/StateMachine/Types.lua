@@ -25,6 +25,7 @@ export type StateMachine = {
     _StateReinvolked: any, --BindableEvent 
     _BannedStates: {[StateName]: number},
     _ActiveStates: {[StateName]: ActiveState},
+    _AddedBans: {[StateName]: boolean},
     --Signals
     OnStateRemoving: RBXScriptSignal | any,
     OnStateAdded: RBXScriptSignal | any, 
@@ -32,6 +33,9 @@ export type StateMachine = {
     --Methods    
     AddState: (StateMachine, StateName, number?, boolean?) -> (),
     RemoveState: (StateMachine, StateName) -> (),
+    
+    AddBan: (StateMachine, StateName) -> boolean,
+    RemoveBan: (StateMachine, StateName) -> boolean,
     
     HasState: (StateMachine, StateName) -> boolean,
     Reset: (StateMachine) -> (),

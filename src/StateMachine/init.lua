@@ -1,4 +1,5 @@
 --!strict
+local SCILENCE_WARNINGS = false
 
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local RunService = game:GetService("RunService")
@@ -101,6 +102,13 @@ local function Init()
             RunService.RenderStepped:Wait()
         end
     end)
+end
+
+local warn = warn
+if SCILENCE_WARNINGS then
+    warn = function(...)
+        return
+    end
 end
 
 function StateMachine:AddState(StateName: string, duration: number?, overrideQueuedDuration: boolean?): boolean
@@ -234,6 +242,40 @@ function StateMachine:RemoveState(StateName: string)
     else    
         error(("Can't exit '"..StateName.."' [DNE]"))
     end
+end
+
+function StateMachine:AddBan(StateName: string): boolean
+    if self.States[StateName] then
+        if self._AddedBans[StateName] then
+            warn(("State "..StateName.." has already been banned by the machine"))
+            return false
+        else
+            self._AddedBans[StateName] = true
+            self._BannedStates[StateName] = (self._BannedStates[StateName] or 0) + 1
+            return true
+        end
+    else    
+        error(("Can't exit '"..StateName.."' [DNE]"))
+        return false
+    end
+end
+
+function StateMachine:RemoveBan(StateName: string): boolean
+    if self.States[StateName] then
+        if self._AddedBans[StateName] then
+            self._AddedBans[StateName] = nil
+            self._BannedStates[StateName] = (self._BannedStates[StateName] or 0) - 1
+            if self._BannedStates[StateName] < 1 then
+                self._BannedStates[StateName] = nil
+            end
+            return true
+        else
+            warn(("Cannot remove state "..StateName..". State was not ban by StateMachine"))
+        end
+    else    
+        error(("Can't exit '"..StateName.."' [DNE]"))
+    end
+    return false
 end
 
 function StateMachine:HasState(StateName: string): boolean
