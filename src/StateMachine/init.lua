@@ -146,7 +146,6 @@ function StateMachine:AddState(StateName: string, duration: number?, overrideQue
         end
 
         for _, BlockerName: StateName in ipairs(self.States[StateName].Blockers) do
-            print("CHECKING IF BLOCKED BY", BlockerName)
             if self._ActiveStates[BlockerName] ~= nil then
                 warn(("Can't enter "..StateName.. " [blocked by "..BlockerName.."]"))
                 return false
