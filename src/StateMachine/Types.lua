@@ -18,6 +18,7 @@ export type StateMachine = {
         Enums: {[any]: StateName},
         [StateName]: State     
     },
+    _Locked: boolean,
     _ActiveStatesHeap: any,
     _ActiveStatesUpdates: any, -- {[StateName]: number} Linter not liking this, giving up for now
     _StateAdded: any, --BindableEvent 
@@ -38,6 +39,8 @@ export type StateMachine = {
     RemoveBan: (StateMachine, StateName) -> boolean,
     
     HasState: (StateMachine, StateName) -> boolean,
+    SetLocked: (StateMachine, boolean) -> (),
+    IsLocked: () -> boolean,
     Reset: (StateMachine) -> (),
     GetStates: (StateMachine) -> {[StateName]: ActiveState},
     GetHeap: (StateMachine) -> {any},

@@ -11,8 +11,19 @@ type StateMachine = Types.StateMachine
 
 local StateMachine = {} :: StateMachine
 
+
+
+local warn = warn
+if SCILENCE_WARNINGS then
+    warn = function(...)
+        return
+    end
+end
+
 local function Init()
+    StateMachine._Locked = false
     StateMachine._BannedStates = {}
+    StateMachine._AddedBans = {}
     StateMachine._ActiveStates = {} 
     StateMachine.States = require(script.States) :: any
     local function unpackDict(Dict: {any: any}): (any, any) -- Is there a more elegant to get a dict's keys in lua?
@@ -62,7 +73,10 @@ local function Init()
     -- 2) If the task has expired, ensure that it is Removed
     task.spawn(function()
         while true do
-
+            if StateMachine.IsLocked() then
+                RunService.Heartbeat:Wait()
+                continue
+            end
            
             if StateMachine._ActiveStatesHeap:Size() > 0 then
                 local NextExpiredState = StateMachine._ActiveStatesHeap:Peek()
@@ -104,15 +118,11 @@ local function Init()
     end)
 end
 
-local warn = warn
-if SCILENCE_WARNINGS then
-    warn = function(...)
-        return
-    end
-end
-
 function StateMachine:AddState(StateName: string, duration: number?, overrideQueuedDuration: boolean?): boolean
-
+    if self.IsLocked() then
+        warn("Cannot add, StateMachine is locked!")
+        return false
+    end
     --duration = duration or -1
     local DEFAULT_DURATION = -1
     overrideQueuedDuration = overrideQueuedDuration or false
@@ -134,6 +144,15 @@ function StateMachine:AddState(StateName: string, duration: number?, overrideQue
                 return false
             end
         end
+
+        for _, BlockerName: StateName in ipairs(self.States[StateName].Blockers) do
+            print("CHECKING IF BLOCKED BY", BlockerName)
+            if self._ActiveStates[BlockerName] ~= nil then
+                warn(("Can't enter "..StateName.. " [blocked by "..BlockerName.."]"))
+                return false
+            end
+        end
+
 
 
         --Enter or re-involk
@@ -210,6 +229,10 @@ function StateMachine:AddState(StateName: string, duration: number?, overrideQue
 end
 
 function StateMachine:RemoveState(StateName: string)
+    if self.IsLocked() then
+        warn("Cannot remove, StateMachine is locked!")
+        return false
+    end
     if self.States[StateName] then
         if self._ActiveStates[StateName] ~= nil then
             if #self.States[StateName].Bans > 0 then
@@ -245,6 +268,10 @@ function StateMachine:RemoveState(StateName: string)
 end
 
 function StateMachine:AddBan(StateName: string): boolean
+    if self.IsLocked() then
+        warn("Cannot AddBan, StateMachine is locked!")
+        return false
+    end
     if self.States[StateName] then
         if self._AddedBans[StateName] then
             warn(("State "..StateName.." has already been banned by the machine"))
@@ -261,6 +288,10 @@ function StateMachine:AddBan(StateName: string): boolean
 end
 
 function StateMachine:RemoveBan(StateName: string): boolean
+    if self.IsLocked() then
+        warn("Cannot RemoveBan, StateMachine is locked!")
+        return false
+    end
     if self.States[StateName] then
         if self._AddedBans[StateName] then
             self._AddedBans[StateName] = nil
@@ -277,6 +308,7 @@ function StateMachine:RemoveBan(StateName: string): boolean
     end
     return false
 end
+
 
 function StateMachine:HasState(StateName: string): boolean
     return not (self._ActiveStates[StateName] == nil)
@@ -295,6 +327,13 @@ function StateMachine:GetTimeUntilExpiration(StateName): number?
     end
     
     return nil
+end
+function StateMachine.IsLocked(): boolean
+    return StateMachine._Locked
+end
+
+function StateMachine:SetLocked(state: boolean)
+    self._Locked = state    
 end
 
 function StateMachine:GetStates()
