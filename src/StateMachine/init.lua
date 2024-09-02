@@ -105,10 +105,15 @@ local function Init()
                     while StateMachine._ActiveStatesHeap:Peek() ~= nil do
                         local NextNextExpiredState = StateMachine._ActiveStatesHeap:Peek()
                         local NextStateName, NextExperationTimestamp = unpackDict(NextNextExpiredState)
+                        if NextExperationTimestamp < 0 then
+                            break
+                        end
                         local NextTimeTillExpired = NextExperationTimestamp - tick()
                         if NextTimeTillExpired <= 0 then   
                             StateMachine._ActiveStatesHeap:Pop()
                             StateMachine:RemoveState(NextStateName)
+                        else
+                            break
                         end
                     end
                 end
