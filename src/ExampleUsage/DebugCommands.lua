@@ -26,8 +26,8 @@ commands = {
     ["/heap"] = function()
         print(StateMachine:GetHeap())
     end,
-    ["/addstate"] = function(_, StateName, Duration, Override)
-        StateMachine:AddState(StateName, tonumber(Duration), Override)
+    ["/addstate"] = function(_, StateName, Duration, Override, customProps)
+        StateMachine:AddState(StateName, tonumber(Duration), Override, customProps)
     end,
     ["/gettime"] = function(_, StateName)
 		local res = StateMachine:GetTimeUntilExpiration(StateName) or "[UNKNOWN STATE ERR]"

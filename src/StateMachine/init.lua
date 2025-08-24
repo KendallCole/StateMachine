@@ -8,6 +8,7 @@ local Types = require(script.Types)
 type StateName = Types.StateName
 type State = Types.State
 type StateMachine = Types.StateMachine
+type CustomProps = Types.CustomProps
 
 local StateMachine = {} :: StateMachine
 
@@ -26,6 +27,9 @@ local function Init()
     StateMachine._AddedBans = {}
     StateMachine._ActiveStates = {} 
     StateMachine.States = require(script.States) :: any
+    for _, state in StateMachine.States do
+        state.StateMachine = StateMachine
+    end
     local function unpackDict(Dict: {any: any}): (any, any) -- Is there a more elegant to get a dict's keys in lua?
         for k, v in pairs(Dict) do
             return k, v
@@ -123,7 +127,7 @@ local function Init()
     end)
 end
 
-function StateMachine:AddState(StateName: string, duration: number?, overrideQueuedDuration: boolean?): boolean
+function StateMachine:AddState(StateName: string, duration: number?, overrideQueuedDuration: boolean?, customProps: CustomProps): boolean
     if self.IsLocked() then
         warn("Cannot add, StateMachine is locked!")
         return false
@@ -161,7 +165,7 @@ function StateMachine:AddState(StateName: string, duration: number?, overrideQue
 
         --Enter or re-involk
         if self._ActiveStates[StateName] ~= nil then
-            self.States[StateName].OnReinvoked()
+            self.States[StateName].OnReinvoked(customProps)
 
             --Search heap for our state, update the index if found
             for i, heapEntry in StateMachine._ActiveStatesHeap do
@@ -193,7 +197,7 @@ function StateMachine:AddState(StateName: string, duration: number?, overrideQue
             end
             self._StateReinvolked:Fire(StateName)
         else
-            self.States[StateName].OnEnter()
+            self.States[StateName].OnEnter(customProps)
             local ExperationTimestamp = if duration >= 0 then tick() + duration else DEFAULT_DURATION
             self._ActiveStates[StateName] = {
                 Alive = true
@@ -204,7 +208,7 @@ function StateMachine:AddState(StateName: string, duration: number?, overrideQue
 
             if self.States[StateName].WhileActive ~= nil then
                 local NewThread = task.spawn(function()
-                    self.States[StateName].WhileActive()
+                    self.States[StateName].WhileActive(customProps)
                 end)           
                 self._ActiveStates[StateName].ActiveTask = NewThread
             end

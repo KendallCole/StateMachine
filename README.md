@@ -1,5 +1,37 @@
 # Non Deterministic State Machine
 
+## CHANGES:
+
+8/24/2025:
+- You can now pass custom props when adding active states
+- State machine in use now automatically gets injected into any state machine files (Poor mans dependency injection :)
+
+Example:
+```luau
+-- Example State Machine Runner
+StateMachine:AddState(StateName, 1, false, {["Hello"]: 'World'})
+
+
+
+
+-- Example StateFile.luau
+State = {
+    StateMachine = {} :: StateMachine,
+
+    OnEnter = function(customProps)
+
+        print("Testing CustomProps!: ", customProps) -- // "Testing CustomProps!:  {["Hello"]: 'World'}"
+        
+        StateMachine:RemoveState("FooBar") -- Using StateMachine that got injected upon require
+    end,
+end
+}
+
+
+```
+
+```
+
 ## Events 
 ### OnStateAdded 
 ```lua

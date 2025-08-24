@@ -18,8 +18,8 @@ States.BlockerState = {
     Bans = {States.Enums.ExampleState},      -- States that are not allowed while in the current state
     Prerequisites = {},      --  These states must be present for it to start 
     Removes = {},   --  Removes these states upon start
-    OnEnter = function()        
-        print("My enter function works!")
+    OnEnter = function(customProps)        
+        print("My enter function works! Testing")
     end,
     
     OnExit = function()

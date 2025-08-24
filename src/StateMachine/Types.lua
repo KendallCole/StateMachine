@@ -1,3 +1,4 @@
+export type CustomProps = {[any]: any}?
 export type ActiveState = {
     ActiveTask: thread, 
     Alive: boolean
@@ -8,10 +9,11 @@ export type State = {
     Bans: {StateName},
     Removes: {StateName},
     Prerequisites: {StateName},
-    OnEnter: () -> (),
+    OnEnter: (CustomProps) -> (),
     OnExit: () -> (),
-    OnReinvoked: () -> (),
-    WhileActive: () -> (),
+    OnReinvoked: (CustomProps) -> (),
+    WhileActive: (CustomProps) -> (),
+    StateMachine: StateMachine
 } 
 export type StateMachine = {
     States: {
@@ -32,7 +34,7 @@ export type StateMachine = {
     OnStateAdded: RBXScriptSignal | any, 
     OnStateReinvolked: RBXScriptSignal | any, 
     --Methods    
-    AddState: (StateMachine, StateName, number?, boolean?) -> (),
+    AddState: (StateMachine, StateName, number?, boolean?, CustomProps) -> (),
     RemoveState: (StateMachine, StateName) -> (),
     
     AddBan: (StateMachine, StateName) -> boolean,
