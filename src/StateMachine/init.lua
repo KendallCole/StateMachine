@@ -27,9 +27,7 @@ local function Init()
     StateMachine._AddedBans = {}
     StateMachine._ActiveStates = {} 
     StateMachine.States = require(script.States) :: any
-    for _, state in StateMachine.States do
-        state.StateMachine = StateMachine
-    end
+
     local function unpackDict(Dict: {any: any}): (any, any) -- Is there a more elegant to get a dict's keys in lua?
         for k, v in pairs(Dict) do
             return k, v
@@ -72,6 +70,11 @@ local function Init()
 
     StateMachine._StateRemoved = StateRemoved
     StateMachine.OnStateRemoving = StateRemoved.Event 
+
+	-- Events are ready, can inject now!
+	for _, state in StateMachine.States do
+        state.StateMachine = StateMachine
+    end
     --STRATEGY:
     -- 1) Using a min heap (for positive numbers only, ignores -1 for infinity) to see if the current task has expired
     -- 2) If the task has expired, ensure that it is Removed
@@ -365,5 +368,6 @@ end
 
 Init()
 return StateMachine
+
 
 
